@@ -1,0 +1,8 @@
+{
+  "domain": "mytransilien",
+  "name": "MyTransilien",
+  "version": "1.2.0",
+  "documentation": "https://github.com/philfer/MyTransilien",
+  "config_flow": true,
+  "iot_class": "cloud_polling"
+}

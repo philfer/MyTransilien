@@ -1,0 +1,5 @@
+{
+  "name": "MyTransilien",
+  "country": ["FR"],
+  "homeassistant": "2026.1.0"
+}

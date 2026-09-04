@@ -1,0 +1,25 @@
+# Carte compacte type panneau de gare.
+# Remplacez uniquement la valeur de "entity" par le capteur "Prochains trajets"
+# du trajet MyTransilien que vous souhaitez afficher.
+
+type: markdown
+content: >-
+  {% set entity = 'sensor.mytransilien_prochains_trains' %}
+  {% set journeys = state_attr(entity, 'trains') or [] %}
+  {% set origin = state_attr(entity, 'origin') or 'Départ' %}
+  {% set destination = state_attr(entity, 'destination') or 'Arrivée' %}
+  {% set mode = state_attr(entity, 'mode') %}
+
+  **🚆 {{ origin }} → {{ destination }}**
+  {% if mode == 'schedule' %} · 📅 Prévu{% else %} · 🟢 Temps réel{% endif %}
+
+  {% if journeys | count == 0 %}
+  _Aucun trajet disponible_
+  {% else %}
+
+  | Départ | Arrivée | Ligne | Info |
+  |---:|---:|:---|---:|
+  {% for j in journeys[:5] %}
+  | **{{ j.time }}** | **{{ j.arrival_time or '—' }}** | {{ (j.lines or ['—']) | join(' / ') }} | {% if j.mode == 'schedule' %}📅 Prévu{% elif j.status == 'cancelled' %}🔴 Supprimé{% elif j.delay_minutes is not none and j.delay_minutes > 0 %}🟠 +{{ j.delay_minutes }} min{% elif j.delay_minutes is not none %}🟢 À l'heure{% elif j.minutes is not none %}dans {{ j.minutes }} min{% else %}—{% endif %} |
+  {% endfor %}
+  {% endif %}

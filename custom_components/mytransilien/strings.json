@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "MyTransilien",
+        "description": "Configurez un trajet. La clé PRIM est réutilisée automatiquement pour les trajets supplémentaires.",
+        "data": {
+          "api_key": "Clé API PRIM",
+          "origin": "Gare de départ",
+          "destination": "Gare d'arrivée",
+          "max_trains": "Nombre de prochains trajets",
+          "tomorrow_start_hour": "Heure de début des horaires du lendemain",
+          "tomorrow_duration_hours": "Fenêtre du lendemain (heures)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Clé API PRIM invalide.",
+      "api_forbidden": "La clé PRIM est reconnue mais n'a pas accès à cette API.",
+      "quota_exceeded": "Le quota de requêtes PRIM est dépassé.",
+      "cannot_connect": "Impossible de contacter PRIM.",
+      "station_not_found": "Gare introuvable dans PRIM/Navitia.",
+      "same_station": "La gare de départ et la gare d'arrivée doivent être différentes."
+    },
+    "abort": {
+      "already_configured": "Ce trajet MyTransilien est déjà configuré."
+    }
+  }
+}
