@@ -135,7 +135,7 @@ class MyTransilienCoordinator(DataUpdateCoordinator):
         return {
             "Accept": "application/json",
             "apikey": self.api_key,
-            "User-Agent": "MyTransilien-HomeAssistant/1.2.1",
+            "User-Agent": "MyTransilien-HomeAssistant/1.2.2",
         }
 
     async def _get_json(self, url, *, params=None):
