@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import logging
+from time import monotonic
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -22,12 +24,41 @@ from .const import (
     DEFAULT_TOMORROW_DURATION_HOURS,
     DEFAULT_TOMORROW_START_HOUR,
     DOMAIN,
+    PRIM_MIN_REQUEST_INTERVAL_SECONDS,
     PRIM_NAVITIA_BASE,
     UPDATE_INTERVAL_SECONDS,
 )
 
 _LOGGER = logging.getLogger(__name__)
 PARIS_TZ = ZoneInfo("Europe/Paris")
+
+_PRIM_REQUEST_LOCK: asyncio.Lock | None = None
+_LAST_PRIM_REQUEST_STARTED = 0.0
+
+
+def _get_prim_request_lock() -> asyncio.Lock:
+    global _PRIM_REQUEST_LOCK
+    if _PRIM_REQUEST_LOCK is None:
+        _PRIM_REQUEST_LOCK = asyncio.Lock()
+    return _PRIM_REQUEST_LOCK
+
+
+async def _wait_for_prim_request_slot() -> None:
+    """Ensure all route coordinators share a single PRIM request rate."""
+    global _LAST_PRIM_REQUEST_STARTED
+
+    lock = _get_prim_request_lock()
+    async with lock:
+        elapsed = monotonic() - _LAST_PRIM_REQUEST_STARTED
+        wait_seconds = PRIM_MIN_REQUEST_INTERVAL_SECONDS - elapsed
+        if wait_seconds > 0:
+            _LOGGER.debug(
+                "PRIM rate limit: waiting %.1f seconds before next request",
+                wait_seconds,
+            )
+            await asyncio.sleep(wait_seconds)
+
+        _LAST_PRIM_REQUEST_STARTED = monotonic()
 
 
 def _parse_datetime(value):
@@ -104,10 +135,11 @@ class MyTransilienCoordinator(DataUpdateCoordinator):
         return {
             "Accept": "application/json",
             "apikey": self.api_key,
-            "User-Agent": "MyTransilien-HomeAssistant/1.2.0",
+            "User-Agent": "MyTransilien-HomeAssistant/1.2.1",
         }
 
     async def _get_json(self, url, *, params=None):
+        await _wait_for_prim_request_slot()
         async with self.session.get(
             url,
             params=params,
